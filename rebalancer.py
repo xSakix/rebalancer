@@ -193,7 +193,7 @@ def simulate(assets, start_date, end_date, crypto=False):
 
     rebalance_inv = Investor()
     bah_inv = Investor()
-    bah_investors = []
+    bah_investors = {}
 
     dist = np.full(len(assets), 0.9 / len(assets))
     print(dist)
@@ -214,11 +214,11 @@ def simulate(assets, start_date, end_date, crypto=False):
     for asset in assets:
         investor = Investor()
         bah_asset = BuyAndHoldInvestmentStrategy(investor, [1.0], tr_cost, crypto)
-        bah_investors.append(bah_asset)
         d1 = pandas.DataFrame(data[asset], columns=[asset])
         d2 = pandas.DataFrame(data2[asset], columns=[asset])
         bah_asset.invest(d1, d2)
-        writeResults(asset, d1, prices, investor)
+        bah_investors[asset]= bah_asset
+        writeResults(asset, d1, [d1[asset][len(data[key]) - 1]], investor)
 
     writeResults('REBALANCE:', data, prices, rebalance_inv)
     writeResults('B&H:', data, prices, bah_inv)
@@ -227,14 +227,19 @@ def simulate(assets, start_date, end_date, crypto=False):
     plt.plot(rebalance_inv.history, label='rebalance')
     plt.plot(bah_inv.history, label='buy & hold')
     plt.plot(bah_inv.invested_history, label='invested')
-    plt.legend(('rebalance', 'buy & hold', 'invested'), loc='upper left')
+    legends = ['rebalance', 'buy & hold', 'invested'];
+    for key in bah_investors.keys():
+        legends.append('b&h - '+key)
+        plt.plot(bah_investors[key].investor.history, label=key)
+
+    plt.legend(legends, loc='upper left')
     plt.show()
 
 
-def writeResults(type, data, prices, rebalance_inv):
+def writeResults(type, data, prices, investor):
     print(type)
-    write_investor_results(rebalance_inv)
-    write_potfolio_results(rebalance_inv, prices, data)
+    write_investor_results(investor)
+    write_potfolio_results(investor, prices, data)
 
 
 def write_investor_results(rebalance_inv):
