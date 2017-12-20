@@ -146,7 +146,7 @@ def write_potfolio_results(investor, prices, data):
     print('cash : ' + str(investor.cash))
 
 
-def simulate(etfs, start_date, end_date, crypto=False):
+def simulate(assets, start_date, end_date, crypto=False):
     data_source = 'yahoo'
     file = "data_open.csv"
     file2 = "data_close.csv"
@@ -155,12 +155,12 @@ def simulate(etfs, start_date, end_date, crypto=False):
 
     if os.path.isfile(file):
         data = pandas.read_csv(file)
-        for etf in etfs:
-            if not data.keys().contains(etf):
+        for asset in assets:
+            if not data.keys().contains(asset):
                 has_to_load_data = True
 
     if not os.path.isfile(file) or has_to_load_data:
-        panel_data = data_reader.DataReader(etfs, data_source, start_date, end_date)
+        panel_data = data_reader.DataReader(assets, data_source, start_date, end_date)
         panel_data.to_frame().to_csv('all_data.csv')
         panel_data.ix['Open'].to_csv(file)
         panel_data.ix['Close'].to_csv(file2)
@@ -193,8 +193,9 @@ def simulate(etfs, start_date, end_date, crypto=False):
 
     rebalance_inv = Investor()
     bah_inv = Investor()
+    bah_investors = []
 
-    dist = np.full(len(etfs), 0.9 / len(etfs))
+    dist = np.full(len(assets), 0.9 / len(assets))
     print(dist)
     tr_cost = 2.0
     if crypto:
@@ -210,20 +211,17 @@ def simulate(etfs, start_date, end_date, crypto=False):
     for key in data.keys():
         prices.append(data[key][len(data[key]) - 1])
 
-    print('REBALANCE:')
-    print('zisk: ' + str(rebalance_inv.history[-1]))
-    print('investovane: ' + str(rebalance_inv.invested))
-    print('pocet rebalance: ' + str(rebalance_inv.rebalances))
-    print('Podiely:')
+    for asset in assets:
+        investor = Investor()
+        bah_asset = BuyAndHoldInvestmentStrategy(investor, [1.0], tr_cost, crypto)
+        bah_investors.append(bah_asset)
+        d1 = pandas.DataFrame(data[asset], columns=[asset])
+        d2 = pandas.DataFrame(data2[asset], columns=[asset])
+        bah_asset.invest(d1, d2)
+        writeResults(asset, d1, prices, investor)
 
-    write_potfolio_results(rebalance_inv, prices, data)
-
-    print('B&H:')
-    print('zisk: ' + str(bah_inv.history[-1]))
-    print('investovane: ' + str(bah_inv.invested))
-    print('Podiely:')
-    c = np.multiply(bah_inv.shares, prices)
-    write_potfolio_results(bah_inv, prices, data)
+    writeResults('REBALANCE:', data, prices, rebalance_inv)
+    writeResults('B&H:', data, prices, bah_inv)
 
     plt.subplot2grid((2, len(data.keys())), (1, 0), colspan=3)
     plt.plot(rebalance_inv.history, label='rebalance')
@@ -233,12 +231,25 @@ def simulate(etfs, start_date, end_date, crypto=False):
     plt.show()
 
 
-etf = ['FAB', 'UUP']
-start_date = '2011-06-16'
-end_date = '2017-12-12'
+def writeResults(type, data, prices, rebalance_inv):
+    print(type)
+    write_investor_results(rebalance_inv)
+    write_potfolio_results(rebalance_inv, prices, data)
 
-# etf = ['BTC-USD', 'VTC-USD']
-# start_date = '2017-01-01'
+
+def write_investor_results(rebalance_inv):
+    print('Podiely:')
+    print('zisk: ' + str(rebalance_inv.history[-1]))
+    print('investovane: ' + str(rebalance_inv.invested))
+    print('pocet rebalance: ' + str(rebalance_inv.rebalances))
+
+
+# etf = ['FAB', 'UUP']
+# start_date = '2011-06-16'
 # end_date = '2017-12-12'
+
+etf = ['BTC-USD', 'VTC-USD']
+start_date = '2017-01-01'
+end_date = '2017-12-12'
 
 simulate(etf, start_date, end_date, crypto=False)
