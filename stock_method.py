@@ -24,8 +24,8 @@ def load_data(data_dir):
 
 
 def find_clusters(data, imgs, names):
-    pca = PCA(n_components=len(imgs))
-    data = pca.fit(data).transform(data)
+    # pca = PCA(n_components=len(imgs))
+    # data = pca.fit(data).transform(data)
     # kmeans = KMeans(init='k-means++', n_clusters=2, n_init=3).fit(data)
     # labels = kmeans.labels_
     #
