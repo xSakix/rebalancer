@@ -47,6 +47,9 @@ def find_clusters(data, imgs, names):
 
 
 def interpret_results(predictions, imgs):
+
+    predictions.sort(key = lambda tup : tup[1])
+
     classes = []
     for (name, label) in predictions:
         if not classes.__contains__(label):
@@ -54,7 +57,7 @@ def interpret_results(predictions, imgs):
 
     print('classes: ' + str(classes))
 
-    num = 2
+    num = 4
     counter = np.zeros(len(classes))
 
     index = 0
