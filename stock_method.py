@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from sklearn.cluster import KMeans, DBSCAN, MeanShift, AffinityPropagation, Birch
+from sklearn.cluster import KMeans, DBSCAN, MeanShift, AffinityPropagation, Birch, MiniBatchKMeans,SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 import numpy as np
 import os
@@ -26,9 +26,15 @@ def load_data(data_dir):
 def find_clusters(data, imgs, names):
     # pca = PCA(n_components=len(imgs))
     # data = pca.fit(data).transform(data)
-    # kmeans = KMeans(init='k-means++', n_clusters=2, n_init=3).fit(data)
+    # kmeans = KMeans(n_clusters=3).fit(data)
     # labels = kmeans.labels_
-    #
+    # kmeans = MiniBatchKMeans(n_clusters=3).fit(data)
+    # labels = kmeans.labels_
+    # spectral = SpectralClustering(n_clusters=3).fit(data)
+    # labels = spectral.labels_
+    agglo = AgglomerativeClustering(n_clusters=3)
+    agglo.fit(data)
+    labels = agglo.labels_
     # labels = kmeans.predict(data).tolist()
     # db = DBSCAN().fit(data)
     # labels = db.labels_
@@ -38,8 +44,8 @@ def find_clusters(data, imgs, names):
     # labels = affinity.labels_
     # gaussian = GaussianMixture().fit(data)
     # labels = gaussian.predict(data)
-    birch = Birch().fit(data)
-    labels = birch.labels_
+    # birch = Birch().fit(data)
+    # labels = birch.labels_
     print(labels)
     predictions = list(zip(names, labels))
 
