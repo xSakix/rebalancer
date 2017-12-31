@@ -3,6 +3,7 @@ import rebalancer
 from sp500_data_loader import load_data
 import numpy as np
 
+
 def interpet_results(assets, rebalance_inv, bah_inv, data, condition, dir):
     prices = []
     for key in data.keys():
@@ -10,8 +11,8 @@ def interpet_results(assets, rebalance_inv, bah_inv, data, condition, dir):
 
     # rebalancer.writeResults('REBALANCE:', data, prices, rebalance_inv)
     # rebalancer.writeResults('B&H:', data, prices, bah_inv)
-    print('rebalance: %f'%rebalance_inv.history[-1])
-    print('b&h: %f'%bah_inv.history[-1])
+    print('rebalance: %f' % rebalance_inv.history[-1])
+    print('b&h: %f' % bah_inv.history[-1])
 
     if condition:
         for key in data.keys():
@@ -36,11 +37,11 @@ for stock1 in stocks:
             continue
         stock = [stock1, stock2]
         stock_list.append(stock)
-        print('simulating: '+str(stock))
+        print('simulating: ' + str(stock))
         df_open, df_close, df_high, df_low, df_adj_close = load_data(stock, start_date, end_date)
-        rebalance_inv, bah_inv = rebalancer.simulate(df_open, df_close,df_high,df_low, crypto=False)
+        rebalance_inv, bah_inv = rebalancer.simulate(df_adj_close, df_high, df_low, crypto=False)
 
-        condition = np.abs(rebalance_inv.history[-1] - bah_inv.history[-1])/bah_inv.history[-1] > 0.1
+        condition = (rebalance_inv.history[-1] - bah_inv.history[-1]) / bah_inv.history[-1] > 0.5
         # interpet_results(stock, rebalance_inv, bah_inv, data,condition,'stock_results/')
-        #condition2 = rebalance_inv.history[-1] < bah_inv.history[-1]
-        interpet_results(stock, rebalance_inv, bah_inv, df_open, condition, 'stock_results/')
+        # condition2 = rebalance_inv.history[-1] < bah_inv.history[-1]
+        interpet_results(stock, rebalance_inv, bah_inv, df_adj_close, condition, 'stock_results_50_perc/')

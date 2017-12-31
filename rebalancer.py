@@ -23,7 +23,7 @@ class RebalancingInvestmentStrategy:
         self.tr_cost = tr_cost
         self.crypto = crypto
 
-    def invest(self, df_open, df_close, df_high, df_low):
+    def invest(self, df_open,  df_high, df_low):
         df_high_low = np.abs(df_high - df_low)
 
         if len(df_open.keys()) == 0:
@@ -93,7 +93,7 @@ class BuyAndHoldInvestmentStrategy:
         self.tr_cost = tr_cost
         self.crypto = crypto
 
-    def invest(self, df_open, df_close,df_high,df_low):
+    def invest(self, df_open, df_high,df_low):
         df_high_low = np.abs(df_high - df_low)
 
         if len(df_open.keys()) == 0:
@@ -169,14 +169,14 @@ def write_potfolio_results(investor, prices, data):
     print('cash : ' + str(investor.cash))
 
 
-def simulate(df_open, df_close, df_high, df_low, crypto=False):
-    if len(df_open) == 0:
+def simulate(price_data, df_high, df_low, crypto=False):
+    if len(price_data) == 0:
         return
 
     rebalance_inv = Investor()
     bah_inv = Investor()
 
-    dist = np.full(len(df_open.keys()), 0.9 / len(df_open.keys()))
+    dist = np.full(len(price_data.keys()), 0.9 / len(price_data.keys()))
     print(dist)
     tr_cost = 2.0
     if crypto:
@@ -185,8 +185,8 @@ def simulate(df_open, df_close, df_high, df_low, crypto=False):
     rebalance = RebalancingInvestmentStrategy(rebalance_inv, dist, tr_cost, crypto)
     bah = BuyAndHoldInvestmentStrategy(bah_inv, dist, tr_cost, crypto)
 
-    rebalance.invest(df_open, df_close, df_high, df_low)
-    bah.invest(df_open, df_close,df_high,df_low)
+    rebalance.invest(price_data, df_high, df_low)
+    bah.invest(price_data, df_high, df_low)
 
     return rebalance_inv, bah_inv
 
