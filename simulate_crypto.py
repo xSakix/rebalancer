@@ -22,8 +22,8 @@ def interpet_results(rebalance_inv, bah_inv, data):
 
 crypto_list = ['BTC-USD', 'VTC-USD']
 start_date = '2017-01-01'
-end_date = '2017-12-12'
+end_date = '2017-12-31'
 
 data, data2 = rebalancer.load_data(crypto_list, end_date, start_date)
-rebalance_inv, bah_inv = rebalancer.simulate(data, data2, crypto=False)
+rebalance_inv, bah_inv = rebalancer.simulate(data, data, data2, crypto=True)
 interpet_results(rebalance_inv, bah_inv, data)

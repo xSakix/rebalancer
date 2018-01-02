@@ -154,7 +154,11 @@ def compute_prices(high_low, prices):
         if high_low[i] <= 0. or np.isnan(high_low[i]):
             high_low[i] = 0.001
     noise = np.random.normal(0, high_low)
+    # print('noise = '+str(noise))
+    # print('price before = '+str(prices))
     prices = np.add(prices, noise)
+    # print('price after = '+str(prices))
+
     return prices
 
 
@@ -176,8 +180,11 @@ def simulate(price_data, df_high, df_low, crypto=False):
     rebalance_inv = Investor()
     bah_inv = Investor()
 
-    dist = np.full(len(price_data.keys()), 0.9 / len(price_data.keys()))
-    print(dist)
+    if len(price_data.keys()) == 1:
+        dist = np.array([0.5])
+    else:
+        dist = np.full(len(price_data.keys()), 0.9 / len(price_data.keys()))
+    # print(dist)
     tr_cost = 2.0
     if crypto:
         tr_cost = 0.0025
