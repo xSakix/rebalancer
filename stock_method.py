@@ -40,34 +40,34 @@ def load_data(data_dir):
     return names, imgs
 
 
-def find_clusters(data, imgs, names):
-    # pca = PCA(n_components=len(imgs))
-    # data = pca.fit(data).transform(data)
-    kmeans = KMeans(n_clusters=3).fit(data)
-    labels = kmeans.labels_
-    # kmeans = MiniBatchKMeans(n_clusters=3).fit(data)
-    # labels = kmeans.labels_
-    # spectral = SpectralClustering(n_clusters=3).fit(data)
-    # labels = spectral.labels_
-    # agglo = AgglomerativeClustering(n_clusters=3)
-    # agglo.fit(data)
-    # labels = agglo.labels_
-    # labels = kmeans.predict(data).tolist()
-    # db = DBSCAN().fit(data)
-    # labels = db.labels_
-    # shift = MeanShift().fit(data)
-    # labels = shift.labels_
-    # affinity = AffinityPropagation().fit(data)
-    # labels = affinity.labels_
-    # gaussian = GaussianMixture().fit(data)
-    # labels = gaussian.predict(data)
-    # birch = Birch().fit(data)
-    # labels = birch.labels_
-    # print(labels)
+def find_clusters(data, imgs, names, n_components=100):
+    pca = PCA(n_components=n_components)
+    data = pca.fit(data).transform(data)
+    alg = KMeans(n_clusters=3).fit(data)
+    labels = alg.labels_
+    # alg = MiniBatchKMeans(n_clusters=3).fit(data)
+    # labels = alg.labels_
+    # alg = SpectralClustering(n_clusters=3).fit(data)
+    # labels = alg.labels_
+    # alg = AgglomerativeClustering(n_clusters=3)
+    # alg.fit(data)
+    # labels = alg.labels_
+    # labels = alg.predict(data).tolist()
+    # alg = DBSCAN().fit(data)
+    # labels = alg.labels_
+    # alg = MeanShift().fit(data)
+    # labels = alg.labels_
+    # alg = AffinityPropagation().fit(data)
+    # labels = alg.labels_
+    # alg = GaussianMixture().fit(data)
+    # labels = alg.predict(data)
+    # alg = Birch().fit(data)
+    # labels = alg.labels_
+    print(labels)
     predictions = list(zip(names, labels))
 
 
-    return predictions,kmeans
+    return predictions,alg
 
 
 def interpret_results(predictions, imgs):
@@ -106,22 +106,43 @@ def shufle_pred(predictions):
 
     return new_pred
 
-names, imgs = load_data('train_stock')
+print('looking for clusters....')
+
+names, imgs = load_data('train_reb')
 
 data = np.array(imgs).reshape((len(imgs), -1))
 
 predictions, kmeans = find_clusters(data, imgs, names)
 
-interpret_results(predictions, imgs)
+# interpret_results(predictions, imgs)
+#
+# interpret_results(shufle_pred(predictions), imgs)
+# interpret_results(shufle_pred(predictions), imgs)
+# interpret_results(shufle_pred(predictions), imgs)
 
-interpret_results(shufle_pred(predictions), imgs)
-interpret_results(shufle_pred(predictions), imgs)
-interpret_results(shufle_pred(predictions), imgs)
+for (name, label) in predictions:
+    print('prediction =>' + str(name) + '->' + str(label))
 
-names, imgs = load_data('stock_bah_results')
+print('validating....')
+
+names, imgs = load_data('val_reb')
 data = np.array(imgs).reshape((len(imgs), -1))
+pca = PCA(n_components=100)
+data = pca.fit(data).transform(data)
 labels = kmeans.predict(data)
 predictions = list(zip(names, labels))
 # interpret_results(predictions, imgs)
 for (name, label) in predictions:
     print('prediction =>' + str(name) + '->' + str(label))
+
+print('testing....')
+names, imgs = load_data('test_reb')
+data = np.array(imgs).reshape((len(imgs), -1))
+pca = PCA(n_components=100)
+data = pca.fit(data).transform(data)
+labels = kmeans.predict(data)
+predictions = list(zip(names, labels))
+# interpret_results(predictions, imgs)
+for (name, label) in predictions:
+    print('prediction =>' + str(name) + '->' + str(label))
+
