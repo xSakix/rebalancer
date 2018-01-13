@@ -7,7 +7,8 @@ start_date = '2010-01-01'
 end_date = '2017-12-12'
 
 
-df_open, df_close, df_high, df_low, df_adj_close = load_data(['MMM','ES'], start_date, end_date)
+df_open, df_close, df_high, df_low, df_adj_close = load_data(['MMM', 'AMZN'], start_date, end_date)
+
 # desc = df_open.describe()
 # print(desc.loc['mean']['AMZN'])
 # print(desc.loc['std']['AMZN'])

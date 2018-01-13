@@ -6,6 +6,16 @@ import numpy as np
 from pandas_datareader._utils import RemoteDataError
 
 
+def load_high_low(df_high, df_low, df_open):
+    if df_high is not None and df_low is not None:
+        df_high_low = np.abs(df_high - df_low)
+    else:
+        for key in df_open.keys():
+            std = df_open[key].std()
+            mean = df_open[key].mean()
+
+    return df_high_low
+
 class Investor:
     def __init__(self):
         self.cash = 0.
@@ -23,8 +33,9 @@ class RebalancingInvestmentStrategy:
         self.tr_cost = tr_cost
         self.crypto = crypto
 
-    def invest(self, df_open,  df_high, df_low):
-        df_high_low = np.abs(df_high - df_low)
+    def invest(self, df_open,  df_high = None, df_low = None):
+        df_high_low = load_high_low(df_high, df_low, df_open)
+
 
         if len(df_open.keys()) == 0:
             return
@@ -84,6 +95,8 @@ class RebalancingInvestmentStrategy:
                     self.investor.cash = portfolio - value - np.sum(cost)
 
             day += 1
+
+
 
 
 class BuyAndHoldInvestmentStrategy:
