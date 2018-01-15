@@ -139,7 +139,7 @@ class BuyAndHoldInvestmentStrategy:
 
             prices = compute_prices(high_low, prices)
 
-            if day % 30 == 0:
+            if day % (30*6) == 0:
                 c = np.multiply(self.dist, portfolio)
                 if not self.crypto:
                     c = np.subtract(c, self.tr_cost)
@@ -187,7 +187,7 @@ def write_potfolio_results(investor, prices, data):
 
 
 def simulate(price_data, df_high, df_low, crypto=False):
-    if len(price_data) == 0:
+    if len(price_data.keys()) == 0:
         return
 
     rebalance_inv = Investor()
@@ -228,6 +228,55 @@ def load_data(assets, end_date, start_date):
         panel_data.ix['Close'].to_csv(file2)
     data = pandas.read_csv(file)
     data2 = pandas.read_csv(file2)
+    if data['Date'][0] > data['Date'][len(data['Date']) - 1]:
+        rows = []
+        rows2 = []
+        for i in reversed(data.index):
+            row = [data[key][i] for key in data.keys()]
+            row2 = [data2[key][i] for key in data2.keys()]
+            rows.append(row)
+            rows2.append(row2)
+
+        data = pandas.DataFrame(rows, columns=data.keys())
+        data2 = pandas.DataFrame(rows2, columns=data2.keys())
+    print('Simulation from %s to %s' % (start_date, end_date))
+    del data['Date']
+    del data2['Date']
+    indexes = []
+    for key in data.keys():
+        for i in data[key].index:
+            val = data[key][i]
+            try:
+                if np.isnan(val) and not indexes.__contains__(i):
+                    indexes.append(i)
+            except TypeError:
+                if not indexes.__contains__(i):
+                    indexes.append(i)
+    data.drop(indexes, inplace=True)
+    data2.drop(indexes, inplace=True)
+    return data, data2
+
+
+def load_etf_data(assets, end_date, start_date):
+    data_source = 'yahoo'
+    file = "etf_data_open.csv"
+    file_high = "etf_data_high.csv"
+    file_low = "etf_data_low.csv"
+    has_to_load_data = False
+
+    if os.path.isfile(file):
+        data = pandas.read_csv(file)
+        for asset in assets:
+            if not data.keys().contains(asset):
+                has_to_load_data = True
+
+    if not os.path.isfile(file) or has_to_load_data:
+        panel_data = data_reader.DataReader(assets, data_source, start_date, end_date)
+        panel_data.to_frame().to_csv('all_data.csv')
+        panel_data.ix['Open'].to_csv(file)
+        panel_data.ix['Close'].to_csv(file_high)
+    data = pandas.read_csv(file)
+    data2 = pandas.read_csv(file_high)
     if data['Date'][0] > data['Date'][len(data['Date']) - 1]:
         rows = []
         rows2 = []
