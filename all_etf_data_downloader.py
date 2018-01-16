@@ -70,7 +70,7 @@ def load_sub_assets_list(assets, max_size, times):
     return sub_assets
 
 
-with open('etfs.txt', 'r') as fd:
+with open('etfs_short.txt', 'r') as fd:
     etfs = list(fd.read().splitlines())
 
 etfs = list(set(etfs))
