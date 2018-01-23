@@ -6,13 +6,9 @@ import numpy as np
 from pandas_datareader._utils import RemoteDataError
 
 
-def load_high_low(df_high, df_low, df_open):
+def load_high_low(df_high, df_low):
     if df_high is not None and df_low is not None:
         df_high_low = np.abs(df_high - df_low)
-    else:
-        for key in df_open.keys():
-            std = df_open[key].std()
-            mean = df_open[key].mean()
 
     return df_high_low
 
@@ -34,7 +30,7 @@ class RebalancingInvestmentStrategy:
         self.crypto = crypto
 
     def invest(self, df_open,  df_high = None, df_low = None):
-        df_high_low = load_high_low(df_high, df_low, df_open)
+        df_high_low = load_high_low(df_high, df_low)
 
 
         if len(df_open.keys()) == 0:
@@ -50,13 +46,8 @@ class RebalancingInvestmentStrategy:
                 self.investor.cash += 300.
                 self.investor.invested += 300.
 
-            prices = []
-            high_low = []
-            for key in df_open.keys():
-                prices.append(df_open[key][i])
-                high_low.append(df_high_low[key][i])
-
-            prices = np.array(prices, dtype='float64')
+            prices = df_open.loc[i]
+            high_low = df_high_low.loc[i]
             portfolio = self.investor.cash + np.dot(prices, self.investor.shares)
 
             self.investor.history.append(portfolio)
@@ -107,7 +98,7 @@ class BuyAndHoldInvestmentStrategy:
         self.crypto = crypto
 
     def invest(self, df_open, df_high,df_low):
-        df_high_low = np.abs(df_high - df_low)
+        df_high_low = load_high_low(df_high,df_low)
 
         if len(df_open.keys()) == 0:
             return
@@ -123,13 +114,8 @@ class BuyAndHoldInvestmentStrategy:
                 self.investor.invested += 300.
                 self.investor.rebalances += 1
 
-            prices = []
-            high_low = []
-            for key in df_open.keys():
-                prices.append(df_open[key][i])
-                high_low.append(df_high_low[key][i])
-
-            prices = np.array(prices)
+            prices = df_open.loc[i]
+            high_low = df_high_low.loc[i]
             high_low = np.array(high_low)
 
             portfolio = self.investor.cash + np.dot(prices, self.investor.shares)
@@ -139,7 +125,7 @@ class BuyAndHoldInvestmentStrategy:
 
             prices = compute_prices(high_low, prices)
 
-            if day % (30*6) == 0:
+            if day % 30 == 0:
                 c = np.multiply(self.dist, portfolio)
                 if not self.crypto:
                     c = np.subtract(c, self.tr_cost)
@@ -163,14 +149,11 @@ class BuyAndHoldInvestmentStrategy:
 
 
 def compute_prices(high_low, prices):
-    for i in range(len(high_low)):
-        if high_low[i] <= 0. or np.isnan(high_low[i]):
-            high_low[i] = 0.001
+    high_low = np.array(high_low)
+    high_low[high_low <= 0.] = 0.001
+    high_low[np.isnan(high_low)] = 0.001
     noise = np.random.normal(0, high_low)
-    # print('noise = '+str(noise))
-    # print('price before = '+str(prices))
     prices = np.add(prices, noise)
-    # print('price after = '+str(prices))
 
     return prices
 
@@ -209,101 +192,6 @@ def simulate(price_data, df_high, df_low, crypto=False):
     bah.invest(price_data, df_high, df_low)
 
     return rebalance_inv, bah_inv
-
-
-def load_data(assets, end_date, start_date):
-    data_source = 'yahoo'
-    file = "data_open.csv"
-    file2 = "data_close.csv"
-    has_to_load_data = False
-    if os.path.isfile(file):
-        data = pandas.read_csv(file)
-        for asset in assets:
-            if not data.keys().contains(asset):
-                has_to_load_data = True
-    if not os.path.isfile(file) or has_to_load_data:
-        panel_data = data_reader.DataReader(assets, data_source, start_date, end_date)
-        panel_data.to_frame().to_csv('all_data.csv')
-        panel_data.ix['Open'].to_csv(file)
-        panel_data.ix['Close'].to_csv(file2)
-    data = pandas.read_csv(file)
-    data2 = pandas.read_csv(file2)
-    if data['Date'][0] > data['Date'][len(data['Date']) - 1]:
-        rows = []
-        rows2 = []
-        for i in reversed(data.index):
-            row = [data[key][i] for key in data.keys()]
-            row2 = [data2[key][i] for key in data2.keys()]
-            rows.append(row)
-            rows2.append(row2)
-
-        data = pandas.DataFrame(rows, columns=data.keys())
-        data2 = pandas.DataFrame(rows2, columns=data2.keys())
-    print('Simulation from %s to %s' % (start_date, end_date))
-    del data['Date']
-    del data2['Date']
-    indexes = []
-    for key in data.keys():
-        for i in data[key].index:
-            val = data[key][i]
-            try:
-                if np.isnan(val) and not indexes.__contains__(i):
-                    indexes.append(i)
-            except TypeError:
-                if not indexes.__contains__(i):
-                    indexes.append(i)
-    data.drop(indexes, inplace=True)
-    data2.drop(indexes, inplace=True)
-    return data, data2
-
-
-def load_etf_data(assets, end_date, start_date):
-    data_source = 'yahoo'
-    file = "etf_data_open.csv"
-    file_high = "etf_data_high.csv"
-    file_low = "etf_data_low.csv"
-    has_to_load_data = False
-
-    if os.path.isfile(file):
-        data = pandas.read_csv(file)
-        for asset in assets:
-            if not data.keys().contains(asset):
-                has_to_load_data = True
-
-    if not os.path.isfile(file) or has_to_load_data:
-        panel_data = data_reader.DataReader(assets, data_source, start_date, end_date)
-        panel_data.to_frame().to_csv('all_data.csv')
-        panel_data.ix['Open'].to_csv(file)
-        panel_data.ix['Close'].to_csv(file_high)
-    data = pandas.read_csv(file)
-    data2 = pandas.read_csv(file_high)
-    if data['Date'][0] > data['Date'][len(data['Date']) - 1]:
-        rows = []
-        rows2 = []
-        for i in reversed(data.index):
-            row = [data[key][i] for key in data.keys()]
-            row2 = [data2[key][i] for key in data2.keys()]
-            rows.append(row)
-            rows2.append(row2)
-
-        data = pandas.DataFrame(rows, columns=data.keys())
-        data2 = pandas.DataFrame(rows2, columns=data2.keys())
-    print('Simulation from %s to %s' % (start_date, end_date))
-    del data['Date']
-    del data2['Date']
-    indexes = []
-    for key in data.keys():
-        for i in data[key].index:
-            val = data[key][i]
-            try:
-                if np.isnan(val) and not indexes.__contains__(i):
-                    indexes.append(i)
-            except TypeError:
-                if not indexes.__contains__(i):
-                    indexes.append(i)
-    data.drop(indexes, inplace=True)
-    data2.drop(indexes, inplace=True)
-    return data, data2
 
 
 def writeResults(type, data, prices, investor):
