@@ -14,6 +14,9 @@ def load_data(assets, start_date, end_date):
 
 
 def load_data_from_file(file, assets, start_date, end_date):
+    if not os.path.isfile(file):
+        file = '../rebalancer/'+file
+
     df = pd.read_csv(file)
     df = df.loc[df.Date > start_date]
     df = df.loc[df.Date < end_date]
