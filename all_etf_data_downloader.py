@@ -7,6 +7,9 @@ from pandas_datareader._utils import RemoteDataError
 
 def load_all_data(assets, end_date, start_date, max_size=50):
     data_source = 'yahoo'
+    # data_source = 'google'
+    # data_source = 'quandl'
+    # assets = ['WIKI/'+asset for asset in assets]
     file_open = "etf_data_open.csv"
     file_close = "etf_data_close.csv"
     file_low = "etf_data_low.csv"
@@ -70,14 +73,14 @@ def load_sub_assets_list(assets, max_size, times):
     return sub_assets
 
 
-with open('etfs_short.txt', 'r') as fd:
+with open('etfs.txt', 'r') as fd:
     etfs = list(fd.read().splitlines())
 
 etfs = list(set(etfs))
 
 print(etfs)
-start_date = '2000-01-01'
-end_date = '2017-12-12'
+start_date = '1993-01-29'
+end_date = '2017-12-31'
 
 load_all_data(etfs, end_date, start_date, max_size=5)
 data = pandas.read_csv('etf_data_open.csv')
