@@ -1,5 +1,0 @@
-BND
-SPY
-XLK
-VWO
-UUP
