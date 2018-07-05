@@ -135,7 +135,7 @@ def simulate(price_data, pc=0.1, crypto=False):
     if len(price_data.keys()) == 1:
         dist = np.array([0.5])
     else:
-        dist = np.full(len(price_data.keys()), 0.9 / len(price_data.keys()))
+        dist = np.full(len(price_data.keys()), 1.0 / len(price_data.keys()))
     print(dist)
     tr_cost = 2.0
     if crypto:

@@ -10,9 +10,10 @@ from etf_data_loader import load_all_data_from_file2
 sys.path.insert(0, '../buy_hold_simulation')
 import bah_simulator as bah
 
-pc_list = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5]
+# pc_list = [0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.2, 0.3, 0.4, 0.5]
 
-# pc_list = [.08]
+
+pc_list = [.08, 0.1]
 
 
 def interpet_results(reb_inv_lis, bah_inv, pc_list):
@@ -26,6 +27,19 @@ def interpet_results(reb_inv_lis, bah_inv, pc_list):
     legends.append('b&h')
     legends.append('invested')
     plt.legend(legends, loc='upper left')
+    plt.title('absolute')
+    plt.show()
+
+    legends = []
+    for pc, reb_inv in zip(pc_list, reb_inv_list):
+        plt.plot(reb_inv.ror_history, label='rebalance ' + str(pc))
+        legends.append('rebalance ' + str(pc))
+
+    plt.plot(bah_inv.ror_history, color='black', label='b&h')
+    legends.append('b&h')
+    legends.append('invested')
+    plt.legend(legends, loc='upper left')
+    plt.title('ror')
     plt.show()
 
 
@@ -33,16 +47,7 @@ start_date = '1993-01-01'
 end_date = '2018-06-15'
 data = load_all_data_from_file2('mil_etf_data_adj_close.csv', start_date, end_date)
 
-etf = ['IH2O.MI',
-       'INDG.MI',
-       'MGT.MI',
-       'BUND2L.MI',
-       'XS3R.MI',
-       'XTXC.MI',
-       'SWDA.MI',
-       'DJE.MI',
-       'IUSE.MI'
-       ]
+etf = ['IH2O.MI', 'CL2.MI']
 df_adj_close = data[etf]
 
 plt.plot(df_adj_close)
